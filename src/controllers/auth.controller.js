@@ -81,8 +81,45 @@ const getUserProfile = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 }
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany();
+    res.json({ users });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+const updateStudent = async (req, res) => {
+  const { id } = req.params;
+  const { name, email, phoneNumber } = req.body;
+
+  try {
+    // تحقق لو المستخدم موجود
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // تحديث بيانات المستخدم
+    const updatedUser = await prisma.user.update({
+      where: { id },
+      data: { name, email, phoneNumber }
+    });
+
+    res.json({ message: 'User updated successfully', user: updatedUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 module.exports = {
   register,
   login,
-  getUserProfile
+  getUserProfile,
+  getAllUsers,
+  updateStudent
 };

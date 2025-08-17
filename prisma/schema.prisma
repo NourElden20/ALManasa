@@ -21,4 +21,43 @@ model User {
   phoneNumber  String   @unique
   role         String   @default("student")
   joinedAt     DateTime @default(now())
+
+  subscriptionId String?      // FK optional to Subscription
+  subscription Subscription?  @relation(fields: [subscriptionId], references: [id])
+  createdCourses Course[]    @relation("CourseCreator")
+
+  enrolledCourses CourseEnrollment[]  // Relation to CourseEnrollment
+}
+model CourseEnrollment{
+  userId    String
+  courseId  String
+  user      User   @relation(fields: [userId], references: [id])
+  course    Course @relation(fields: [courseId], references: [id])
+  @@id([userId, courseId]) // Composite primary key
+}
+model Course {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  instructorId String
+  instructor  User     @relation("CourseCreator", fields: [instructorId], references: [id])
+  enrolledUsers CourseEnrollment[] // Relation to CourseEnrollment
+  }
+
+model Subscription{
+  id          String   @id @default(uuid())
+  planId      String
+  plan        SubscriptionPlan @relation(fields: [planId], references: [id])
+  startDate   DateTime @default(now())
+  endDate     DateTime
+  users       User[]   // many users can belong to the same subscription   
+}
+
+model SubscriptionPlan{
+  id          String   @id @default(uuid())
+  name        String   @unique
+  price       Float
+  durationInDays    Int      // Duration in days
+  subscriptions Subscription[]
 }
