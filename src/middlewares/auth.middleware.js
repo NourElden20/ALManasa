@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
-export const authenticate = (req, res, next) => {
+const authenticate = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1]; // "Bearer token"
   if (!token) {
     return res.status(401).json({ error: 'Access denied. No token provided.' });
@@ -14,3 +14,4 @@ export const authenticate = (req, res, next) => {
     res.status(401).json({ error: 'Invalid token' });
   }
 };
+module.exports = { authenticate };

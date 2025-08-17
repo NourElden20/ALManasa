@@ -1,8 +1,9 @@
-import prisma from '../prisma.mjs';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+const prisma = require('../prisma.js');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
-export const register = async (req, res) => {
+
+const register = async (req, res) => {
   const { name, email, password, phoneNumber, role } = req.body;
 
   try {
@@ -35,7 +36,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -65,7 +66,7 @@ export const login = async (req, res) => {
   }
 };
 
-export const getUserProfile = async (req, res) => {
+const getUserProfile = async (req, res) => {
   try {
     const userId = req.user.id; // الحصول على id من req.user الذي تم تعيينه في middleware
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -80,3 +81,8 @@ export const getUserProfile = async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 }
+module.exports = {
+  register,
+  login,
+  getUserProfile
+};
