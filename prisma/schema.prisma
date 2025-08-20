@@ -22,42 +22,151 @@ model User {
   role         String   @default("student")
   joinedAt     DateTime @default(now())
 
-  subscriptionId String?      // FK optional to Subscription
-  subscription Subscription?  @relation(fields: [subscriptionId], references: [id])
-  createdCourses Course[]    @relation("CourseCreator")
-
-  enrolledCourses CourseEnrollment[]  // Relation to CourseEnrollment
+  // Relations
+  createdCourses  Course[]           @relation("CourseCreator")
+  enrolledCourses CourseEnrollment[] // Relation to CourseEnrollment
+  quizSubmissions QuizSubmission[]
+  sectionComments SectionComment[] // Comments made by the user on sections
 }
-model CourseEnrollment{
-  userId    String
-  courseId  String
-  user      User   @relation(fields: [userId], references: [id])
-  course    Course @relation(fields: [courseId], references: [id])
+
+model CourseEnrollment {
+  userId   String
+  courseId String
+  user     User   @relation(fields: [userId], references: [id])
+  course   Course @relation(fields: [courseId], references: [id])
+
   @@id([userId, courseId]) // Composite primary key
 }
-model Course {
-  id          String   @id @default(uuid())
-  title       String
-  description String
-  createdAt   DateTime @default(now())
-  instructorId String
-  instructor  User     @relation("CourseCreator", fields: [instructorId], references: [id])
-  enrolledUsers CourseEnrollment[] // Relation to CourseEnrollment
-  }
 
-model Subscription{
-  id          String   @id @default(uuid())
-  planId      String
-  plan        SubscriptionPlan @relation(fields: [planId], references: [id])
-  startDate   DateTime @default(now())
-  endDate     DateTime
-  users       User[]   // many users can belong to the same subscription   
+model Course {
+  id            String             @id @default(uuid())
+  title         String
+  description   String
+  thumbnail     String?
+  price         Float
+  createdAt     DateTime           @default(now())
+  teacherId     String
+  teacher       User               @relation("CourseCreator", fields: [teacherId], references: [id])
+  enrolledUsers CourseEnrollment[] // Relation to CourseEnrollment
+  lessons       Lesson[] // Relation to lessons
 }
 
-model SubscriptionPlan{
-  id          String   @id @default(uuid())
-  name        String   @unique
-  price       Float
-  durationInDays    Int      // Duration in days
-  subscriptions Subscription[]
+model Lesson {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+
+  sections Section[] // كل درس فيه sections
+  quiz     Quiz?     @relation("LessonQuiz")
+}
+
+model Section {
+  id        String   @id @default(uuid())
+  title     String
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  mediaUrls String[] // array of media (صور/فيديوهات)
+  createdAt DateTime @default(now())
+
+  comments SectionComment[] // الكومنتات
+}
+
+model SectionComment {
+  id        String   @id @default(uuid())
+  content   String // نص الكومنت
+  createdAt DateTime @default(now())
+
+  // العلاقات
+  sectionId String
+  section   Section @relation(fields: [sectionId], references: [id])
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model Quiz {
+  id          String           @id @default(uuid())
+  title       String
+  description String
+  lessonId    String           @unique
+  lesson      Lesson           @relation("LessonQuiz", fields: [lessonId], references: [id])
+  createdAt   DateTime         @default(now())
+  questions   Question[]
+  submissions QuizSubmission[] // Relation to quiz submissions
+}
+
+model QuizSubmission {
+  id          String           @id @default(uuid())
+  userId      String
+  quizId      String
+  score       Float            @default(0)
+  submittedAt DateTime         @default(now())
+  status      SubmissionStatus // e.g., submitted, graded, etc.
+
+  // Relations
+  user    User     @relation(fields: [userId], references: [id])
+  quiz    Quiz     @relation(fields: [quizId], references: [id])
+  answers Answer[] // Answers given by the user in this submission
+}
+
+enum SubmissionStatus {
+  PENDING
+  GRADED
+}
+
+model Question {
+  id     String @id @default(uuid())
+  quizId String
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  text String // The question text
+  type QuestionType // e.g., MULTIPLE_CHOICE, TRUE_FALSE, SHORT_ANSWER
+
+  // Optional metadata
+  points     Int     @default(1) // Marks assigned
+  order      Int     @default(0) // Order inside quiz
+  isRequired Boolean @default(true) // If the student must answer it
+
+  // Relations
+  options Option[] // For MCQ/TrueFalse
+  answers Answer[] // Student answers
+
+  createdAt DateTime @default(now())
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  SHORT_ANSWER
+  ESSAY
+}
+
+model Option {
+  id         String   @id @default(uuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  text      String // The option text
+  isCorrect Boolean  @default(false) // Marks correct answer
+  answers   Answer[]
+  createdAt DateTime @default(now())
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  submissionId String
+  submission   QuizSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  optionId String? // if MCQ/TrueFalse
+  option   Option? @relation(fields: [optionId], references: [id])
+
+  textAnswer String? // for short/essay answers
+
+  createdAt DateTime @default(now())
 }
