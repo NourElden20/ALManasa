@@ -23,22 +23,22 @@ model User {
   joinedAt     DateTime @default(now())
 
   // Relations
-  createdCourses  Course[]           @relation("CourseCreator")
-  enrolledCourses CourseEnrollment[] // Relation to CourseEnrollment
+  createdLessons  Lesson[]           @relation("lessonCreator")
+  enrolledLessons LessonEnrollment[] // Relation to CourseEnrollment
   quizSubmissions QuizSubmission[]
   sectionComments SectionComment[] // Comments made by the user on sections
 }
 
-model CourseEnrollment {
+model LessonEnrollment {
   userId   String
-  courseId String
+  lessonId String
   user     User   @relation(fields: [userId], references: [id])
-  course   Course @relation(fields: [courseId], references: [id])
+  lesson   Lesson @relation(fields: [lessonId], references: [id])
 
-  @@id([userId, courseId]) // Composite primary key
+  @@id([userId, lessonId]) // Composite primary key
 }
 
-model Course {
+model Lesson {
   id            String             @id @default(uuid())
   title         String
   description   String
@@ -46,18 +46,8 @@ model Course {
   price         Float
   createdAt     DateTime           @default(now())
   teacherId     String
-  teacher       User               @relation("CourseCreator", fields: [teacherId], references: [id])
-  enrolledUsers CourseEnrollment[] // Relation to CourseEnrollment
-  lessons       Lesson[] // Relation to lessons
-}
-
-model Lesson {
-  id        String   @id @default(uuid())
-  title     String
-  content   String
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id])
-  createdAt DateTime @default(now())
+  teacher       User               @relation("lessonCreator", fields: [teacherId], references: [id])
+  enrolledUsers LessonEnrollment[] // Relation to CourseEnrollment
 
   sections Section[] // كل درس فيه sections
   quiz     Quiz?     @relation("LessonQuiz")
