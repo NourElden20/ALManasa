@@ -1,6 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
-const AppError = require("../middlewares/appError.js"); // Make sure you have this file
+const AppError = require("../middlewares/errorHandler"); // Make sure you have this file
 
 // Create Lesson
 const createLesson = async (req, res) => {
@@ -111,6 +111,6 @@ module.exports = {
   getLessonById,
   updateLesson,
   deleteLesson,
-  enrollLesson,
+  //enrollLesson,
   getMyEnrolledLessons
 };
