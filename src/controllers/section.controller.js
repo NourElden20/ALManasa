@@ -62,7 +62,7 @@ const getSection = async (req, res) => {
 // ✅ Update Section
 const updateSection = async (req, res) => {
   const { id } = req.params;
-  const { name } = req.body;
+  const { title } = req.body;
 
   const section = await prisma.section.findUnique({
     where: { id },
