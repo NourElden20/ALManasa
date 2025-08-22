@@ -13,7 +13,7 @@ const {
 router.get("/:id", asyncHandler(getSectionById));
 
 // POST /sections → create section for a lesson
-router.post("/", validate(createSectionSchema), asyncHandler(createSection));
+router.post("/create", validate(createSectionSchema), asyncHandler(createSection));
 
 // PUT /sections/:id → update section
 router.put("/:id", validate(updateSectionSchema), asyncHandler(updateSection));
