@@ -14,5 +14,5 @@ const updateSectionSchema = Joi.object({
 
 module.exports = {
   createSectionSchema,
-    updateSectionSchema,
+  updateSectionSchema,
 }

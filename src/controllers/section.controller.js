@@ -1,25 +1,24 @@
 const prisma = require("../prisma"); // adjust path
-const AppError = require("../middlewares/errorHandler"); // Make sure you have this file
-
+const {AppError} = require("../middlewares/errorHandler"); // Make sure you have this file
 
 // ✅ Create Section
 const createSection = async (req, res) => {
-  const { name, courseId,mediaUrls } = req.body;
-
-  if (!name || !courseId) {
-    throw new AppError("Section name and courseId are required", 400);
+  const { title, lessonId,mediaUrls } = req.body;
+  console.log(lessonId);
+  if (!title || !lessonId) {
+    throw new AppError("Section name and lessonId are required", 400);
   }
 
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
+  const lesson = await prisma.lesson.findUnique({
+    where: { id: lessonId },
   });
 
-  if (!course) {
+  if (!lesson) {
     throw new AppError("Course not found", 404);
   }
 
   const section = await prisma.section.create({
-    data: { name, courseId,mediaUrls },
+    data: { title, lessonId,mediaUrls },
   });
 
   res.status(201).json({
@@ -31,7 +30,7 @@ const createSection = async (req, res) => {
 // ✅ Get All Sections
 const getSections = async (req, res) => {
   const sections = await prisma.section.findMany({
-    include: { course: true },
+    include: { lesson: true },
   });
 
   res.status(200).json({
@@ -47,7 +46,7 @@ const getSection = async (req, res) => {
 
   const section = await prisma.section.findUnique({
     where: { id },
-    include: { course: true },
+    include: { lesson: true },
   });
 
   if (!section) {
